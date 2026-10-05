@@ -1,0 +1,11 @@
+bin/
+obj/
+artifacts/
+*.user
+*.pfx
+*.p12
+.vs/
+test-results/
+.playwright-cli/
+output/
+*.log

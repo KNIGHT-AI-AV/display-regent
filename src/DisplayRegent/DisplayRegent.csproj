@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <!-- WPF uses the manifest for per-monitor DPI; WinForms is tray-only. -->
+    <NoWarn>$(NoWarn);WFAC010</NoWarn>
+    <Version>0.1.0</Version>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>regent.ico</ApplicationIcon>
+    <AssemblyName>DisplayRegent</AssemblyName>
+    <StartupObject>DisplayRegent.Program</StartupObject>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <Description>A local Windows display controller.</Description>
+    <Copyright>Copyright © 2026 Knight AI+AV</Copyright>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="regent.ico" CopyToOutputDirectory="PreserveNewest" />
+    <EmbeddedResource Include="regent.ico" LogicalName="regent.ico" />
+    <EmbeddedResource Include="../../LICENSE" LogicalName="LICENSE" />
+    <Compile Include="../RegentSetup/Program.cs" Link="Installer.cs" />
+  </ItemGroup>
+</Project>
