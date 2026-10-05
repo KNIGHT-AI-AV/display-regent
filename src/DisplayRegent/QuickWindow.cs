@@ -20,6 +20,9 @@ internal sealed class QuickWindow : Window
     private Polygon flag = new();
     private Brush ink = Brushes.White, muted = Brushes.Gray, edge = Brushes.Gray, paper = Brushes.Black;
     private static readonly string[] Colors = { "#9BBEED", "#D9B78F", "#ADCFB6", "#C7ADE2", "#EFAAA3", "#A4D7DB" };
+    private static readonly string[] LightColors = { "#436A9D", "#926A36", "#467859", "#765797", "#A35C54", "#397C82" };
+    private Brush Accent(int number) => Color((controller.QuickLight ? LightColors : Colors)[(number - 1) % Colors.Length]);
+    internal System.Drawing.Point? TrayAnchor;
     internal QuickWindow(MainWindow controller)
     {
         this.controller = controller;
@@ -56,7 +59,7 @@ internal sealed class QuickWindow : Window
             double scale = Math.Min(284 / Math.Max(1, width), 62 / Math.Max(1, height));
             foreach (var d in displays)
             {
-                var tile = new Border { Width = Math.Max(18, d.Width * scale), Height = Math.Max(18, d.Height * scale), BorderBrush = Color(Colors[(d.Number - 1) % Colors.Length]), BorderThickness = new Thickness(1), Background = paper, Opacity = d.Enabled ? 1 : .4, CornerRadius = new CornerRadius(2), Child = new TextBlock { Text = d.Number.ToString(), Foreground = ink, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center } };
+                var tile = new Border { Width = Math.Max(18, d.Width * scale), Height = Math.Max(18, d.Height * scale), BorderBrush = Accent(d.Number), BorderThickness = new Thickness(1), Background = paper, Opacity = d.Enabled ? 1 : .4, CornerRadius = new CornerRadius(2), Child = new TextBlock { Text = d.Number.ToString(), Foreground = ink, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center } };
                 Canvas.SetLeft(tile, 10 + (d.X - minX) * scale); Canvas.SetTop(tile, 10 + (d.Y - minY) * scale); canvas.Children.Add(tile);
             }
         }
@@ -66,7 +69,7 @@ internal sealed class QuickWindow : Window
             var row = new DockPanel { Margin = new Thickness(0, 0, 0, 7) };
             var primary = Button(d.Primary ? "★" : "☆", () => controller.QuickPrimary(d), !controller.QuickPending); primary.ToolTip = "Make this the primary screen"; DockPanel.SetDock(primary, Dock.Right); row.Children.Add(primary);
             var toggle = new CheckBox { IsChecked = d.Enabled, IsEnabled = !controller.QuickPending, Foreground = ink, VerticalContentAlignment = VerticalAlignment.Center };
-            var label = new StackPanel(); label.Children.Add(new TextBlock { Text = $"{d.Number}  {d.Name}", Foreground = Color(Colors[(d.Number - 1) % Colors.Length]), FontSize = 12 }); label.Children.Add(Text($"{d.Width} × {d.Height}" + (d.MirrorOf != "" ? " · mirrored" : ""), 10, true)); toggle.Content = label;
+            var label = new StackPanel(); label.Children.Add(new TextBlock { Text = $"{d.Number}  {d.Name}", Foreground = Accent(d.Number), FontSize = 12 }); label.Children.Add(Text($"{d.Width} × {d.Height}" + (d.MirrorOf != "" ? " · mirrored" : ""), 10, true)); toggle.Content = label;
             toggle.Click += (_, _) => controller.QuickToggle(d, toggle.IsChecked == true); row.Children.Add(toggle); body.Children.Add(row);
         }
         var scenes = new WrapPanel { Margin = new Thickness(0, 3, 0, 5) };
@@ -88,12 +91,15 @@ internal sealed class QuickWindow : Window
     {
         Show(); UpdateLayout();
         // Taskbar work-area exclusion anchors the flag immediately above the tray.
-        var screen = Forms.Screen.PrimaryScreen ?? Forms.Screen.FromPoint(Forms.Cursor.Position);
+        var screen = TrayAnchor.HasValue ? Forms.Screen.FromPoint(TrayAnchor.Value) : Forms.Screen.PrimaryScreen ?? Forms.Screen.FromPoint(Forms.Cursor.Position);
         var area = screen.WorkingArea; var handle = new WindowInteropHelper(this).Handle;
         SetWindowPos(handle, new IntPtr(-1), area.Right - 360, area.Bottom - 400, 0, 0, 0x0011);
         double dpi = GetDpiForWindow(handle) / 96d;
         int width = (int)Math.Ceiling(ActualWidth * dpi), height = (int)Math.Ceiling(ActualHeight * dpi);
-        SetWindowPos(handle, new IntPtr(-1), Math.Max(area.Left, area.Right - width - 8), Math.Max(area.Top, area.Bottom - height), width, height, 0x0040);
+        int anchor = TrayAnchor?.X ?? area.Right - 38;
+        int x = Math.Clamp(anchor - width + (int)(29 * dpi), area.Left, Math.Max(area.Left, area.Right - width));
+        flag.Margin = new Thickness(0, -1, Math.Clamp((x + width - anchor) / dpi - 12, 8, Width - 30), 0);
+        SetWindowPos(handle, new IntPtr(-1), x, Math.Max(area.Top, area.Bottom - height), width, height, 0x0040);
         Activate();
     }
 }

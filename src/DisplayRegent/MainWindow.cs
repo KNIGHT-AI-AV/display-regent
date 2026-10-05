@@ -63,7 +63,8 @@ internal sealed class MainWindow : Window
     internal void QuickKeep() { try { Keep(); } catch (Exception e) { status.Text = e.Message; } quick?.Render(); }
     internal void QuickRevert() { Revert(); quick?.Render(); }
     internal void QuickRefresh() { if (before == null) Refresh(); quick?.Render(); }
-    internal void ShowQuick() { quickOperation = true; quick ??= new QuickWindow(this); quick.Render(); quick.OpenAtTray(); }
+    internal void ShowQuick() { quickOperation = true; Hide(); quick ??= new QuickWindow(this); quick.Render(); quick.OpenAtTray(); }
+    private void ShowQuickFromTray() { quick ??= new QuickWindow(this); quick.TrayAnchor = Forms.Cursor.Position; ShowQuick(); }
 
     public MainWindow(bool capture, bool demonstration)
     {
@@ -501,7 +502,7 @@ internal sealed class MainWindow : Window
         menu.Items.Add("Refresh displays", null, (_, _) => Dispatcher.Invoke(Refresh)); menu.Items.Add(new Forms.ToolStripSeparator());
         menu.Items.Add("Quit", null, (_, _) => Dispatcher.Invoke(() => { if (before != null) Revert(); exiting = true; Close(); Application.Current.Shutdown(); }));
         tray = new Forms.NotifyIcon { Text = "Display Regent", Icon = System.Drawing.Icon.ExtractAssociatedIcon(Environment.ProcessPath!), Visible = true, ContextMenuStrip = menu };
-        tray.MouseClick += (_, e) => { if (e.Button == Forms.MouseButtons.Left) Dispatcher.Invoke(ShowQuick); };
+        tray.MouseClick += (_, e) => { if (e.Button == Forms.MouseButtons.Left) Dispatcher.Invoke(ShowQuickFromTray); };
     }
     private void RegisterKeys()
     {
