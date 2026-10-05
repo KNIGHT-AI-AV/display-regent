@@ -31,10 +31,10 @@ internal sealed class QuickWindow : Window
         WindowStyle = WindowStyle.None; ResizeMode = ResizeMode.NoResize;
         AllowsTransparency = true; Background = Brushes.Transparent; ShowInTaskbar = false; Topmost = true;
         FontFamily = new FontFamily("Segoe UI"); FontSize = 12;
-        Deactivated += (_, _) => { if (!controller.QuickPending) FadeAway(); };
+        Deactivated += (_, _) => FadeAway();
         MouseEnter += (_, _) => { pointerHasEntered = true; leaveTimer.Stop(); if (fading) { fading = false; BeginAnimation(OpacityProperty, Fade(1)); } };
-        MouseLeave += (_, _) => { if (pointerHasEntered && !IsMouseOver && !controller.QuickPending) { leaveTimer.Stop(); leaveTimer.Start(); } };
-        leaveTimer.Tick += (_, _) => { leaveTimer.Stop(); if (pointerHasEntered && !IsMouseOver && !controller.QuickPending) FadeAway(); };
+        MouseLeave += (_, _) => { if (pointerHasEntered && !IsMouseOver) { leaveTimer.Stop(); leaveTimer.Start(); } };
+        leaveTimer.Tick += (_, _) => { leaveTimer.Stop(); if (pointerHasEntered && !IsMouseOver) FadeAway(); };
         IsVisibleChanged += (_, _) => { if (!IsVisible) leaveTimer.Stop(); };
         KeyDown += (_, e) => { if (e.Key == Key.Escape) { if (controller.QuickPending) controller.QuickRevert(); else FadeAway(); e.Handled = true; } };
         SourceInitialized += (_, _) => ApplyGlass();

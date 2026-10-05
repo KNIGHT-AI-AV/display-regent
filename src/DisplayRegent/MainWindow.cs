@@ -396,7 +396,7 @@ internal sealed class MainWindow : Window
         try
         {
             DisplayService.Apply(before); if (ticket != null) Recovery.Confirm(ticket);
-            confirmTimer.Stop(); before = null; ticket = null; Refresh(); DrawPresets(); status.Text = "Previous layout restored."; if (quickOperation) ShowQuick(); else BringForward();
+            confirmTimer.Stop(); before = null; ticket = null; Refresh(); DrawPresets(); status.Text = "Previous layout restored."; if (quickOperation) { quick?.Render(); if (quick?.IsVisible == true) ShowQuick(); } else BringForward();
         }
         catch (Exception e) { status.Text = "Recovery is retrying. " + e.Message; }
     }

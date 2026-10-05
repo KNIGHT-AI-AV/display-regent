@@ -12,7 +12,7 @@ Preset boxes 1, 2 and 3 recall your first three saved scenes.
 There are no checkbox or action-button rows in the widget.
 After the first hover contact, moving off waits 700 milliseconds then fades it away.
 Moving back in cancels dismissal. Clicking outside also dismisses it.
-During display confirmation, the panel stays available for recovery.
+If dismissed during confirmation, unconfirmed changes still revert in the background.
 Choose Full panel for new presets, advanced layout, settings or troubleshooting.
 Select a numbered frame or a numbered selector to edit that monitor.
 Use the checkbox to enable or disable a display. At least one must stay on.

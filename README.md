@@ -23,7 +23,7 @@ publisher. SHA-256 checksums identify files but do not certify their publisher.
 - Click a frame to switch; click a frame again to confirm, or press Escape to undo.
 - No widget checkboxes or action-button rows.
 - After first hover, leaving waits 700 ms then fades out; re-entry cancels dismissal.
-- Clicking outside dismisses; the recovery countdown keeps the widget visible.
+- Clicking outside dismisses; unconfirmed display changes still revert in the background.
 - Full panel is an explicit option for presets, arrangement and troubleshooting.
 - Always-on-top option for the full panel, light and dark themes.
 - Windows-reported monitor names, connections, resolutions and desktop positions.
