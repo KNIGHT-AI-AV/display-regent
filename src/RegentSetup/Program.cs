@@ -73,7 +73,7 @@ internal static class Program
             }
             File.Copy(Environment.ProcessPath!,Path.Combine(Target,"Uninstall.exe"),true);
             using var key=Registry.CurrentUser.CreateSubKey(RegistryPath);
-            key.SetValue("DisplayName","Display Regent"); key.SetValue("DisplayVersion","0.1.1 preview"); key.SetValue("Publisher","Knight AI+AV contributors");
+            key.SetValue("DisplayName","Display Regent"); key.SetValue("DisplayVersion","0.1.2 preview"); key.SetValue("Publisher","Knight AI+AV contributors");
             key.SetValue("InstallLocation",Target); key.SetValue("DisplayIcon",Path.Combine(Target,"DisplayRegent.exe"));
             key.SetValue("UninstallString",$"\"{Path.Combine(Target,"Uninstall.exe")}\" --uninstall"); key.SetValue("NoModify",1,RegistryValueKind.DWord); key.SetValue("NoRepair",1,RegistryValueKind.DWord);
             key.SetValue("URLInfoAbout","https://www.knightaiav.com/display-regent/");
@@ -96,7 +96,7 @@ internal sealed class InstallerWindow : Form
         Icon=Icon.ExtractAssociatedIcon(Environment.ProcessPath!);
         Controls.Add(install); Controls.Add(progress);
         var title=new Label { Text="Display Regent", Font=new Font("Georgia",28), Dock=DockStyle.Top, Height=70 };
-        var text=new Label { Text="A little reign over every screen, by Knight AI+AV.\r\n\r\nA minimalist glass widget for your Windows displays. Save scenes, switch screens and arrange your desktop.\r\n\r\nFree and open source under the MIT license.\r\nNo account. No runtime download. No subscription.\r\n\r\nVersion 0.1.1 preview · Signing pending\r\nInstalls for your Windows user without administrator access.", Dock=DockStyle.Top, Height=210 };
+        var text=new Label { Text="A little reign over every screen, by Knight AI+AV.\r\n\r\nA minimalist glass widget for your Windows displays. Save scenes, switch screens and arrange your desktop.\r\n\r\nFree and open source under the MIT license.\r\nNo account. No runtime download. No subscription.\r\n\r\nVersion 0.1.2 preview · Signing pending\r\nInstalls for your Windows user without administrator access.", Dock=DockStyle.Top, Height=210 };
         var license=new LinkLabel { Text="Read the MIT license", Dock=DockStyle.Top, Height=30, LinkColor=Color.FromArgb(155,190,237), ActiveLinkColor=Color.White };
         license.LinkClicked+=(_,_) => { using var reader=new StreamReader(Assembly.GetExecutingAssembly().GetManifestResourceStream("LICENSE")!);MessageBox.Show(reader.ReadToEnd(),"MIT license"); };
         Controls.Add(license);Controls.Add(text);Controls.Add(title);

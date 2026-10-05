@@ -8,7 +8,7 @@
     <Nullable>enable</Nullable>
     <!-- WPF uses the manifest for per-monitor DPI; WinForms is tray-only. -->
     <NoWarn>$(NoWarn);WFAC010</NoWarn>
-    <Version>0.1.1</Version>
+    <Version>0.1.2</Version>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>regent.ico</ApplicationIcon>
     <AssemblyName>DisplayRegent</AssemblyName>

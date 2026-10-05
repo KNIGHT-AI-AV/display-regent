@@ -7,6 +7,7 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using System.Windows.Threading;
 using Forms = System.Windows.Forms;
 
 namespace DisplayRegent;
@@ -18,6 +19,8 @@ internal sealed class QuickWindow : Window
     private TextBlock notice = new();
     private Brush ink = Brushes.White, muted = Brushes.Gray;
     private bool fading;
+    private bool pointerHasEntered;
+    private readonly DispatcherTimer leaveTimer = new() { Interval = TimeSpan.FromMilliseconds(700) };
     internal System.Drawing.Point? TrayAnchor;
     private static readonly string[] DarkColors = { "#9BBEED", "#D9B78F", "#ADCFB6", "#C7ADE2", "#EFAAA3", "#A4D7DB" };
     private static readonly string[] LightColors = { "#436A9D", "#926A36", "#467859", "#765797", "#A35C54", "#397C82" };
@@ -29,6 +32,10 @@ internal sealed class QuickWindow : Window
         AllowsTransparency = true; Background = Brushes.Transparent; ShowInTaskbar = false; Topmost = true;
         FontFamily = new FontFamily("Segoe UI"); FontSize = 12;
         Deactivated += (_, _) => { if (!controller.QuickPending) FadeAway(); };
+        MouseEnter += (_, _) => { pointerHasEntered = true; leaveTimer.Stop(); if (fading) { fading = false; BeginAnimation(OpacityProperty, Fade(1)); } };
+        MouseLeave += (_, _) => { if (pointerHasEntered && !IsMouseOver && !controller.QuickPending) { leaveTimer.Stop(); leaveTimer.Start(); } };
+        leaveTimer.Tick += (_, _) => { leaveTimer.Stop(); if (pointerHasEntered && !IsMouseOver && !controller.QuickPending) FadeAway(); };
+        IsVisibleChanged += (_, _) => { if (!IsVisible) leaveTimer.Stop(); };
         KeyDown += (_, e) => { if (e.Key == Key.Escape) { if (controller.QuickPending) controller.QuickRevert(); else FadeAway(); e.Handled = true; } };
         SourceInitialized += (_, _) => ApplyGlass();
         Render();
@@ -119,6 +126,7 @@ internal sealed class QuickWindow : Window
     }
     private void FadeAway()
     {
+        leaveTimer.Stop();
         if (fading) return; fading = true;
         var animation = Fade(0); animation.Completed += (_, _) => { if (fading) { Hide(); fading = false; } }; BeginAnimation(OpacityProperty, animation);
     }
@@ -138,7 +146,7 @@ internal sealed class QuickWindow : Window
     [DllImport("user32.dll")] private static extern uint GetDpiForWindow(IntPtr hwnd);
     internal void OpenAtTray()
     {
-        bool opening = !IsVisible; fading = false; BeginAnimation(OpacityProperty, null); Opacity = opening ? 0 : 1; Show(); UpdateLayout();
+        bool opening = !IsVisible; if (opening) pointerHasEntered = false; leaveTimer.Stop(); fading = false; BeginAnimation(OpacityProperty, null); Opacity = opening ? 0 : 1; Show(); UpdateLayout();
         var screen = TrayAnchor.HasValue ? Forms.Screen.FromPoint(TrayAnchor.Value) : Forms.Screen.PrimaryScreen ?? Forms.Screen.FromPoint(Forms.Cursor.Position);
         var area = screen.WorkingArea; var handle = new WindowInteropHelper(this).Handle;
         SetWindowPos(handle, new IntPtr(-1), area.Right - 520, area.Bottom - 370, 0, 0, 0x0011);
