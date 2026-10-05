@@ -47,6 +47,23 @@ internal sealed class MainWindow : Window
     private static readonly string[] Colors = { "#9BBEED", "#D9B78F", "#ADCFB6", "#C7ADE2", "#EFAAA3", "#A4D7DB", "#D4CC95", "#C8B9B1" };
     public string? CaptureDirectory;
     public bool AcceptanceCheck;
+    private QuickWindow? quick;
+    private bool quickOperation;
+    internal IReadOnlyList<Display> QuickDisplays => displays;
+    internal IReadOnlyList<Preset> QuickScenes => prefs.Presets;
+    internal bool QuickPending => before != null;
+    internal bool QuickDirty => dirty && !demo;
+    internal int QuickSeconds => seconds;
+    internal string QuickStatus => status.Text;
+    internal bool QuickLight => prefs.Theme == "light";
+    internal void QuickToggle(Display d, bool enabled) { if (before != null) return; d.Enabled = enabled; if (!enabled) d.Primary = false; if (!displays.Any(x => x.Enabled && x.Primary)) { var first = displays.FirstOrDefault(x => x.Enabled); if (first != null) first.Primary = true; } Changed(); }
+    internal void QuickPrimary(Display d) { if (before != null) return; foreach (var x in displays) x.Primary = x == d; d.Enabled = true; d.MirrorOf = ""; Changed(); }
+    internal void QuickApply() { quickOperation = true; Apply(); quick?.Render(); }
+    internal void QuickScene(Preset p) { quickOperation = true; try { ApplyPreset(p); } catch (Exception e) { status.Text = e.Message; } quick?.Render(); }
+    internal void QuickKeep() { try { Keep(); } catch (Exception e) { status.Text = e.Message; } quick?.Render(); }
+    internal void QuickRevert() { Revert(); quick?.Render(); }
+    internal void QuickRefresh() { if (before == null) Refresh(); quick?.Render(); }
+    internal void ShowQuick() { quickOperation = true; quick ??= new QuickWindow(this); quick.Render(); quick.OpenAtTray(); }
 
     public MainWindow(bool capture, bool demonstration)
     {
@@ -331,6 +348,7 @@ internal sealed class MainWindow : Window
     }
     private void DrawActions()
     {
+        quick?.Render();
         actions.Children.Clear();
         if (before != null)
         { actions.Children.Add(Button("Revert", Revert)); actions.Children.Add(Button($"Keep changes · {seconds}s", Keep, true)); }
@@ -351,7 +369,7 @@ internal sealed class MainWindow : Window
             var elapsed = Stopwatch.StartNew(); DisplayService.Apply(requested); Recovery.Arm(activeTicket);
             DisplayService.Verify(displays); elapsed.Stop();
             seconds = 20; confirmationClock.Restart(); confirmTimer.Start(); DrawActions(); DrawInspector(); DrawPresets();
-            BringForward(); status.Text = $"Layout applied in {elapsed.ElapsedMilliseconds} ms. Keep it, or it will revert automatically.";
+            status.Text = $"Layout applied. Keep it, or it will revert automatically."; if (quickOperation) ShowQuick(); else BringForward();
         }
         catch (Exception e)
         {
@@ -377,7 +395,7 @@ internal sealed class MainWindow : Window
         try
         {
             DisplayService.Apply(before); if (ticket != null) Recovery.Confirm(ticket);
-            confirmTimer.Stop(); before = null; ticket = null; Refresh(); DrawPresets(); status.Text = "Previous layout restored."; BringForward();
+            confirmTimer.Stop(); before = null; ticket = null; Refresh(); DrawPresets(); status.Text = "Previous layout restored."; if (quickOperation) ShowQuick(); else BringForward();
         }
         catch (Exception e) { status.Text = "Recovery is retrying. " + e.Message; }
     }
@@ -463,6 +481,7 @@ internal sealed class MainWindow : Window
     private static void PositionWindow(IntPtr hwnd, int x, int y, int w, int h, bool onTop = true) => SetWindowPos(hwnd, new IntPtr(onTop ? -1 : -2), x, y, w, h, 0x0010);
     internal void BringForward()
     {
+        quickOperation = false; quick?.Hide();
         Show(); WindowState = WindowState.Normal;
         var primary = Forms.Screen.PrimaryScreen;
         if (primary != null)
@@ -477,11 +496,12 @@ internal sealed class MainWindow : Window
     }
     private void SetupTray()
     {
-        var menu = new Forms.ContextMenuStrip(); menu.Items.Add("Open Display Regent", null, (_, _) => Dispatcher.Invoke(BringForward));
+        var menu = new Forms.ContextMenuStrip(); menu.Items.Add("Quick widget", null, (_, _) => Dispatcher.Invoke(ShowQuick));
+        menu.Items.Add("Full panel", null, (_, _) => Dispatcher.Invoke(BringForward));
         menu.Items.Add("Refresh displays", null, (_, _) => Dispatcher.Invoke(Refresh)); menu.Items.Add(new Forms.ToolStripSeparator());
         menu.Items.Add("Quit", null, (_, _) => Dispatcher.Invoke(() => { if (before != null) Revert(); exiting = true; Close(); Application.Current.Shutdown(); }));
         tray = new Forms.NotifyIcon { Text = "Display Regent", Icon = System.Drawing.Icon.ExtractAssociatedIcon(Environment.ProcessPath!), Visible = true, ContextMenuStrip = menu };
-        tray.MouseClick += (_, e) => { if (e.Button == Forms.MouseButtons.Left) Dispatcher.Invoke(BringForward); };
+        tray.MouseClick += (_, e) => { if (e.Button == Forms.MouseButtons.Left) Dispatcher.Invoke(ShowQuick); };
     }
     private void RegisterKeys()
     {
@@ -500,8 +520,8 @@ internal sealed class MainWindow : Window
         if (message == 0x312)
         {
             handled = true; int id = w.ToInt32();
-            try { if (id == 100) BringForward(); else { var preset = prefs.Presets.FirstOrDefault(p => p.Hotkey == id); if (preset != null) ApplyPreset(preset); } }
-            catch (Exception e) { BringForward(); status.Text = e.Message; }
+            try { if (id == 100) ShowQuick(); else { var preset = prefs.Presets.FirstOrDefault(p => p.Hotkey == id); if (preset != null) { ShowQuick(); QuickScene(preset); } } }
+            catch (Exception e) { status.Text = e.Message; ShowQuick(); }
         }
         if (message == 0x7e || message == 0x219) { hotplugTimer.Stop(); hotplugTimer.Start(); }
         return IntPtr.Zero;
@@ -509,13 +529,14 @@ internal sealed class MainWindow : Window
     private void SetupShowSignal()
     {
         var signal = new System.Threading.EventWaitHandle(false, System.Threading.EventResetMode.AutoReset, "Local\\DisplayRegentShow");
-        System.Threading.ThreadPool.RegisterWaitForSingleObject(signal, (_, _) => Dispatcher.BeginInvoke(BringForward), null, -1, false);
+        System.Threading.ThreadPool.RegisterWaitForSingleObject(signal, (_, _) => Dispatcher.BeginInvoke(ShowQuick), null, -1, false);
     }
     private async void Capture()
     {
         try
         {
             Directory.CreateDirectory(CaptureDirectory!);
+            if (demo) prefs.Presets = new List<Preset> { new() { Name = "Everyday", Displays = displays.Select(d => d.Copy()).ToList() }, new() { Name = "Focus", Displays = displays.Select(d => { var copy = d.Copy(); copy.Enabled = d.Primary; return copy; }).ToList() } };
             foreach (string theme in new[] { "dark", "light" })
             {
                 prefs.Theme = theme; SetTheme(); BuildShell();
@@ -523,9 +544,13 @@ internal sealed class MainWindow : Window
                 var bitmap = new RenderTargetBitmap((int)ActualWidth * 2, (int)ActualHeight * 2, 192, 192, PixelFormats.Pbgra32); bitmap.Render(this);
                 var png = new PngBitmapEncoder(); png.Frames.Add(BitmapFrame.Create(bitmap));
                 using var file = File.Create(Path.Combine(CaptureDirectory!, $"regent-{(demo ? "demo" : "actual")}-{theme}.png")); png.Save(file);
+                quick ??= new QuickWindow(this); quick.Render(); quick.Show(); quick.UpdateLayout();
+                var widget = new RenderTargetBitmap((int)Math.Ceiling(quick.ActualWidth * 2), (int)Math.Ceiling(quick.ActualHeight * 2), 192, 192, PixelFormats.Pbgra32); widget.Render(quick);
+                var widgetPng = new PngBitmapEncoder(); widgetPng.Frames.Add(BitmapFrame.Create(widget));
+                using var widgetFile = File.Create(Path.Combine(CaptureDirectory!, $"widget-{(demo ? "demo" : "actual")}-{theme}.png")); widgetPng.Save(widgetFile); quick.Hide();
             }
         }
-        finally { exiting = true; Close(); Application.Current.Shutdown(); }
+        finally { quick?.Close(); exiting = true; Close(); Application.Current.Shutdown(); }
     }
     private void RunAcceptance()
     {
@@ -539,6 +564,14 @@ internal sealed class MainWindow : Window
             Console.WriteLine("PASS tray icon created.");
             if (!hotkeys.Contains(100)) throw new InvalidOperationException("Panel hotkey could not register.");
             Console.WriteLine("PASS Ctrl + Alt + M registered.");
+            Hide(); ShowQuick(); quick!.UpdateLayout();
+            if (IsVisible || !quick.IsVisible || quick.ShowInTaskbar || quick.ActualWidth >= 400) throw new InvalidOperationException("Default widget is not compact or full panel opened.");
+            quick.Render(); quick.Render();
+            bool widgetState = selected.Enabled; QuickToggle(selected, !widgetState);
+            if (selected.Enabled == widgetState || !dirty) throw new InvalidOperationException("Widget toggle did not update shared draft.");
+            QuickRefresh(); BringForward();
+            if (!IsVisible || quick.IsVisible) throw new InvalidOperationException("Full panel did not replace widget.");
+            Console.WriteLine("PASS compact tray widget, repeated rendering, shared draft and explicit full-panel navigation.");
             bool oldState = selected.Enabled;
             var check = inspector.Children.OfType<CheckBox>().First(); check.IsChecked = !oldState; check.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
             if (selected.Enabled == oldState || !dirty) throw new InvalidOperationException("Display toggle did not update draft.");

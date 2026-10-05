@@ -4,7 +4,10 @@ Install: run the Setup.exe. The app installs only for your Windows user;
 there is no administrator prompt and no separate runtime to download.
 Portable: extract the ZIP to a normal folder and run DisplayRegent.exe.
 
-Click the tray icon or press Ctrl + Alt + M to open the panel.
+Click the tray icon or press Ctrl + Alt + M to open the compact tray widget.
+Use its screen toggles, primary stars, scene buttons and Apply.
+The popup sits above the system tray with a small flag pointer.
+Choose Full panel for new presets, advanced layout, settings or troubleshooting.
 Select a numbered frame or a numbered selector to edit that monitor.
 Use the checkbox to enable or disable a display. At least one must stay on.
 Set the primary display, choose a resolution, or drag frames to arrange them.

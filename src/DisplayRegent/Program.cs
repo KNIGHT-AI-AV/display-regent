@@ -59,8 +59,8 @@ internal static class Program
             if (capture) window.CaptureDirectory = args.SkipWhile(a => a != "--capture").Skip(1).FirstOrDefault() ?? Path.Combine(Store.DirectoryPath, "captures");
             app.MainWindow = window;
             if (args.Contains("--ui-check")) window.AcceptanceCheck = true;
-            if (!args.Contains("--tray") || capture) window.Show();
-            else { window.Show(); window.Hide(); }
+            if (capture || args.Contains("--ui-check") || args.Contains("--full")) window.Show();
+            else { window.Opacity = 0; window.Show(); window.Hide(); window.Opacity = 1; if (!args.Contains("--tray")) window.ShowQuick(); }
             return app.Run();
         }
         catch (Exception e)

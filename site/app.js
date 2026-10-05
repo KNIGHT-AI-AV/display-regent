@@ -4,7 +4,8 @@ function setTheme(theme) {
   root.dataset.theme = theme;
   themeButton.textContent = theme === 'dark' ? 'Light' : 'Dark';
   themeButton.setAttribute('aria-label', `Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`);
-  document.querySelector('.panel-shot').src = `assets/regent-demo-${theme}.png`;
+  document.querySelector('.panel-shot').src = `assets/widget-demo-${theme}.png`;
+  document.querySelector('.panel-shot').alt = `Display Regent compact tray widget with screen toggles, scenes and a Full panel button, in ${theme} mode`;
   document.querySelector('meta[name="theme-color"]').content = theme === 'dark' ? '#141c2b' : '#f4f6fa';
 }
 try { setTheme(localStorage.getItem('regent-theme') === 'light' ? 'light' : 'dark'); } catch {}

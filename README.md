@@ -7,7 +7,7 @@ selection, layout, primary display, mirroring, resolution and keyboard scenes.
 [Downloads](https://github.com/KNIGHT-AI-AV/display-regent/releases/tag/v0.1.0-preview) ·
 [Quick start](docs/QUICKSTART.md)
 
-![Display Regent dark panel, sample layout](site/assets/regent-demo-dark.png)
+![Display Regent tray widget, sample layout](site/assets/widget-demo-dark.png)
 
 ## Preview status
 
@@ -18,14 +18,17 @@ publisher. SHA-256 checksums identify files but do not certify their publisher.
 
 ## Features
 
-- Tray panel, always-on-top option, light and dark themes.
+- Compact tray widget opens above the system tray with a flag pointer.
+- Screen toggles, primary selection, scenes and safe Apply/Keep/Revert in the widget.
+- Full panel is an explicit option for presets, arrangement and troubleshooting.
+- Always-on-top option for the full panel, light and dark themes.
 - Windows-reported monitor names, connections, resolutions and desktop positions.
 - Resolution-scaled frames with fine ornamental corners and restrained hover motion.
 - Enable/disable outputs; set primary; drag positions with edge snapping.
 - Extend or mirror displays; mirrored targets retain independent on/off controls.
 - Resolution choices from the active source's Windows-reported modes.
 - Saved scenes, clickable controls and Ctrl + Alt + 1–9 scene hotkeys.
-- Ctrl + Alt + M opens the panel; optional tray startup at sign-in.
+- Ctrl + Alt + M opens the widget; optional tray startup at sign-in.
 - Validate before switching, verify after switching, 20-second confirmation.
 - Independent recovery process attempts rollback if the main app crashes.
 - Per-user installer, portable build, no accounts, telemetry or runtime download.
