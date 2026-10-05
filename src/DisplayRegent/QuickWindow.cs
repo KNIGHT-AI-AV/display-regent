@@ -50,7 +50,9 @@ internal sealed class QuickWindow : Window
         var wash = new Border { Background = accent, Opacity = 0, Margin = new Thickness(4) }; content.Children.Add(wash);
         content.Children.Add(new LineFrame(accent) { Opacity = on ? .9 : .36, IsHitTestVisible = false });
         var numeral = Text(number, Math.Clamp(Math.Min(width, height) * .24, 16, 35)); numeral.FontFamily = new FontFamily("Georgia"); numeral.Opacity = on ? .88 : .43; content.Children.Add(numeral);
-        var name = Text(title, Math.Clamp(width / 14, 10, 13)); name.Margin = new Thickness(12); name.Opacity = 0; content.Children.Add(name);
+        var name = Text(title, Math.Clamp(width / 14, 10, 13)); name.Margin = new Thickness(Math.Min(12, width * .08), 6, Math.Min(12, width * .08), 6);
+        if (height < 50) { name.TextWrapping = TextWrapping.NoWrap; name.TextTrimming = TextTrimming.CharacterEllipsis; }
+        name.Opacity = 0; content.Children.Add(name);
         var button = new Button { Content = content, Background = Brushes.Transparent, BorderThickness = new Thickness(0), Padding = new Thickness(0), Cursor = Cursors.Hand, IsEnabled = enabled, Focusable = true };
         System.Windows.Automation.AutomationProperties.SetName(button, title);
         var template = new ControlTemplate(typeof(Button)); var presenter = new FrameworkElementFactory(typeof(ContentPresenter)); template.VisualTree = presenter; button.Template = template;
