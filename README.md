@@ -4,22 +4,24 @@ A little reign over every screen, by **Knight AI+AV**. A free, local Windows tra
 selection, layout, primary display, mirroring, resolution and keyboard scenes.
 
 [Website](https://www.knightaiav.com/display-regent/) ·
-[Downloads](https://github.com/KNIGHT-AI-AV/display-regent/releases/tag/v0.1.0-preview) ·
+[Downloads](https://github.com/KNIGHT-AI-AV/display-regent/releases/tag/v0.1.1-preview) ·
 [Quick start](docs/QUICKSTART.md)
 
 ![Display Regent tray widget, sample layout](site/assets/widget-demo-dark.png)
 
 ## Preview status
 
-Version 0.1.0 is an **unsigned preview**, not a trusted signed production release.
+Version 0.1.1 is an **unsigned preview**, not a trusted signed production release.
 Source, automated layout checks, local hardware switching and installer acceptance
 are separate from broader device coverage and signing. Windows may warn about the
 publisher. SHA-256 checksums identify files but do not certify their publisher.
 
 ## Features
 
-- Compact tray widget opens above the system tray with a flag pointer.
-- Screen toggles, primary selection, scenes and safe Apply/Keep/Revert in the widget.
+- Translucent glass tray widget fades in above the system tray.
+- Clickable line-art monitor frames, names that crossfade in on hover, three preset boxes.
+- Click a frame to switch; click a frame again to confirm, or press Escape to undo.
+- No widget checkboxes or action-button rows.
 - Full panel is an explicit option for presets, arrangement and troubleshooting.
 - Always-on-top option for the full panel, light and dark themes.
 - Windows-reported monitor names, connections, resolutions and desktop positions.

@@ -5,7 +5,7 @@ function setTheme(theme) {
   themeButton.textContent = theme === 'dark' ? 'Light' : 'Dark';
   themeButton.setAttribute('aria-label', `Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`);
   document.querySelector('.panel-shot').src = `assets/widget-demo-${theme}.png`;
-  document.querySelector('.panel-shot').alt = `Display Regent compact tray widget with screen toggles, scenes and a Full panel button, in ${theme} mode`;
+  document.querySelector('.panel-shot').alt = `Display Regent glass widget with line-art monitor frames, three preset boxes and a Full panel link, in ${theme} mode`;
   document.querySelector('meta[name="theme-color"]').content = theme === 'dark' ? '#141c2b' : '#f4f6fa';
 }
 try { setTheme(localStorage.getItem('regent-theme') === 'light' ? 'light' : 'dark'); } catch {}
@@ -23,5 +23,9 @@ monitors.forEach(screen => screen.addEventListener('click', () => {
 document.querySelectorAll('[data-scene]').forEach(button => button.addEventListener('click', () => {
   document.querySelectorAll('[data-scene]').forEach(b => b.classList.toggle('active', b === button));
   monitors.forEach(m => turn(m, button.dataset.scene === 'all' || m.dataset.screen === '1' || (button.dataset.scene === 'stacked' && m.dataset.screen === '3')));
-  status.textContent = `${button.textContent} scene selected in this sample. Your PC is unchanged.`;
+  status.textContent = `${({all:'Everyday',focus:'Focus',stacked:'Stacked'})[button.dataset.scene]} scene selected in this sample. Your PC is unchanged.`;
 }));
+
+const shot = document.querySelector('.panel-shot');
+shot.addEventListener('mouseenter', () => { shot.src = `assets/widget-demo-hover-${root.dataset.theme}.png`; });
+shot.addEventListener('mouseleave', () => { shot.src = `assets/widget-demo-${root.dataset.theme}.png`; });

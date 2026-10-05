@@ -10,7 +10,7 @@ try {
     Copy-Item -LiteralPath LICENSE -Destination "artifacts/$Runtime/LICENSE.txt"
     Copy-Item -LiteralPath docs/QUICKSTART.md -Destination "artifacts/$Runtime/QUICKSTART.txt"
     Compress-Archive -Path "artifacts/$Runtime/*" -DestinationPath artifacts/payload.zip -Force
-    Copy-Item -LiteralPath artifacts/payload.zip -Destination "artifacts/DisplayRegent-0.1.0-preview-$Runtime-Portable.zip"
-    Copy-Item -LiteralPath "artifacts/$Runtime/DisplayRegent.exe" -Destination "artifacts/DisplayRegent-0.1.0-preview-$Runtime-Setup.exe"
-    Get-ChildItem artifacts -File | Where-Object Name -Match '(Setup\.exe|Portable\.zip)$' | ForEach-Object { $regentHash = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLower(); "$regentHash  $($_.Name)" } | Set-Content -Encoding ascii artifacts/SHA256SUMS.txt
+    Copy-Item -LiteralPath artifacts/payload.zip -Destination "artifacts/DisplayRegent-0.1.1-preview-$Runtime-Portable.zip"
+    Copy-Item -LiteralPath "artifacts/$Runtime/DisplayRegent.exe" -Destination "artifacts/DisplayRegent-0.1.1-preview-$Runtime-Setup.exe"
+    Get-ChildItem artifacts -File | Where-Object Name -Match "^DisplayRegent-0.1.1-preview-.*(Setup\.exe|Portable\.zip)$" | ForEach-Object { $regentHash = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLower(); "$regentHash  $($_.Name)" } | Set-Content -Encoding ascii artifacts/SHA256SUMS.txt
 } finally { Pop-Location }

@@ -548,12 +548,16 @@ internal sealed class MainWindow : Window
                 quick ??= new QuickWindow(this); quick.Render(); quick.Show(); quick.UpdateLayout();
                 var widget = new RenderTargetBitmap((int)Math.Ceiling(quick.ActualWidth * 2), (int)Math.Ceiling(quick.ActualHeight * 2), 192, 192, PixelFormats.Pbgra32); widget.Render(quick);
                 var widgetPng = new PngBitmapEncoder(); widgetPng.Frames.Add(BitmapFrame.Create(widget));
-                using var widgetFile = File.Create(Path.Combine(CaptureDirectory!, $"widget-{(demo ? "demo" : "actual")}-{theme}.png")); widgetPng.Save(widgetFile); quick.Hide();
+                using var widgetFile = File.Create(Path.Combine(CaptureDirectory!, $"widget-{(demo ? "demo" : "actual")}-{theme}.png")); widgetPng.Save(widgetFile);
+                quick.PreviewHover(); await System.Threading.Tasks.Task.Delay(240); quick.UpdateLayout();
+                var hovered = new RenderTargetBitmap((int)Math.Ceiling(quick.ActualWidth * 2), (int)Math.Ceiling(quick.ActualHeight * 2), 192, 192, PixelFormats.Pbgra32); hovered.Render(quick);
+                var hoveredPng = new PngBitmapEncoder(); hoveredPng.Frames.Add(BitmapFrame.Create(hovered));
+                using var hoveredFile = File.Create(Path.Combine(CaptureDirectory!, $"widget-{(demo ? "demo" : "actual")}-hover-{theme}.png")); hoveredPng.Save(hoveredFile); quick.Hide();
             }
         }
         finally { quick?.Close(); exiting = true; Close(); Application.Current.Shutdown(); }
     }
-    private void RunAcceptance()
+    private async void RunAcceptance()
     {
         string file = Path.Combine(Store.DirectoryPath, "preferences.json");
         byte[]? originalPreferences = File.Exists(file) ? File.ReadAllBytes(file) : null;
@@ -566,8 +570,9 @@ internal sealed class MainWindow : Window
             if (!hotkeys.Contains(100)) throw new InvalidOperationException("Panel hotkey could not register.");
             Console.WriteLine("PASS Ctrl + Alt + M registered.");
             Hide(); ShowQuick(); quick!.UpdateLayout();
-            if (IsVisible || !quick.IsVisible || quick.ShowInTaskbar || quick.ActualWidth >= 400) throw new InvalidOperationException("Default widget is not compact or full panel opened.");
+            if (IsVisible || !quick.IsVisible || quick.ShowInTaskbar || quick.ActualWidth > 520) throw new InvalidOperationException("Default widget is not compact or full panel opened.");
             quick.Render(); quick.Render();
+            await quick.CheckMinimalSurface();
             bool widgetState = selected.Enabled; QuickToggle(selected, !widgetState);
             if (selected.Enabled == widgetState || !dirty) throw new InvalidOperationException("Widget toggle did not update shared draft.");
             QuickRefresh(); BringForward();
@@ -578,7 +583,7 @@ internal sealed class MainWindow : Window
             if (selected.Enabled == oldState || !dirty) throw new InvalidOperationException("Display toggle did not update draft.");
             Refresh(); Console.WriteLine("PASS display checkbox updates draft; Refresh restores actual state.");
             int originalCount = prefs.Presets.Count;
-            Dispatcher.BeginInvoke(new Action(() =>
+            _ = Dispatcher.BeginInvoke(new Action(() =>
             {
                 var dialog = Application.Current.Windows.OfType<Window>().First(w => w.Title == "Save this scene");
                 var body = (StackPanel)dialog.Content; body.Children.OfType<TextBox>().First().Text = "Acceptance check";

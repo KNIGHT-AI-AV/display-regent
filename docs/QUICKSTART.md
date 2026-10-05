@@ -5,8 +5,11 @@ there is no administrator prompt and no separate runtime to download.
 Portable: extract the ZIP to a normal folder and run DisplayRegent.exe.
 
 Click the tray icon or press Ctrl + Alt + M to open the compact tray widget.
-Use its screen toggles, primary stars, scene buttons and Apply.
-The popup sits above the system tray with a small flag pointer.
+The glass popup fades in above the system tray. Click a line-art monitor box
+to switch that output on or off. Hover a box to crossfade its number into its name.
+Click a screen again within 20 seconds to keep the switch, or press Escape to undo.
+Preset boxes 1, 2 and 3 recall your first three saved scenes.
+There are no checkbox or action-button rows in the widget.
 Choose Full panel for new presets, advanced layout, settings or troubleshooting.
 Select a numbered frame or a numbered selector to edit that monitor.
 Use the checkbox to enable or disable a display. At least one must stay on.
